@@ -1,5 +1,5 @@
 streamlit==1.38.0
-openai
+openai==0.28.0
 anthropic==0.34.2
 google-auth==2.21.0
 google-auth-oauthlib==1.0.0
