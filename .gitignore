@@ -1,6 +1,9 @@
 # App API key
 code/.streamlit/secrets.toml
 
+# Local transcript data
+data/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

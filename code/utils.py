@@ -63,18 +63,40 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import os
 
-def upload_to_google_drive(file_path, folder_id):
-    """Uploads a file to Google Drive."""
-    credentials = Credentials.from_service_account_file(st.secrets["google_drive"]["service_account_file"])
-    drive_service = build("drive", "v3", credentials=credentials)
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-    file_metadata = {
-        "name": os.path.basename(file_path),
-        "parents": [folder_id],
-    }
-    media = MediaFileUpload(file_path, mimetype="text/plain")
-    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media).execute()
-    return uploaded_file.get("id")
+import json  # Add this at the top of the file if not already imported
+
+def upload_to_google_drive(file_path, folder_id):
+    try:
+        logging.debug(f"Attempting to upload {file_path} to folder {folder_id}")
+        
+        # Parse the JSON string into a dictionary
+        service_account_info = json.loads(st.secrets["google_drive"]["service_account_file"])
+        
+        credentials = Credentials.from_service_account_info(service_account_info)
+        drive_service = build("drive", "v3", credentials=credentials)
+
+        file_metadata = {
+            "name": os.path.basename(file_path),
+            "parents": [folder_id],
+        }
+        logging.debug(f"File metadata: {file_metadata}")
+
+        media = MediaFileUpload(file_path, mimetype="text/plain")
+        uploaded_file = drive_service.files().create(
+            body=file_metadata, media_body=media
+        ).execute()
+
+        logging.info(f"Uploaded file ID: {uploaded_file.get('id')}")
+        return uploaded_file.get("id")
+    except Exception as e:
+        logging.error(f"Upload error: {e}")
+        st.error(f"Upload error: {e}")
+        return None
+
+
 
 def save_interview_data(
     username,
@@ -111,8 +133,8 @@ def save_interview_data(
         upload_to_google_drive(time_path, google_drive_folder_id)
 
     # Cleanup local files after uploading
-    os.remove(transcript_path)
-    os.remove(time_path)
+    #os.remove(transcript_path)
+    #os.remove(time_path)
 
 
 
