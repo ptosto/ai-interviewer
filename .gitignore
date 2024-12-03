@@ -1,4 +1,5 @@
-# App API key
+# App API key and google drive service account info
+# don't update to git
 code/.streamlit/secrets.toml
 
 # Local transcript data
