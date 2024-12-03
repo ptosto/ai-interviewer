@@ -67,7 +67,13 @@ CLOSING_MESSAGES["x7y8"] = (
 
 
 # System prompt
-SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
+SYSTEM_PROMPT = f"""You are a hiring manager conducting a structured interview for an entry-level IT Analyst role. Follow the interview outline and ensure balanced coverage of the topics.
+Interview outline {INTERVIEW_OUTLINE}
+
+{CODES}"""
+
+
+old_SYSTEM_PROMPT = f"""{INTERVIEW_OUTLINE}
 
 
 {GENERAL_INSTRUCTIONS}
