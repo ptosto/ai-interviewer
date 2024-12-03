@@ -58,8 +58,65 @@ def check_if_interview_completed(directory, username):
 
         return False
 
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+import os
+
+def upload_to_google_drive(file_path, folder_id):
+    """Uploads a file to Google Drive."""
+    credentials = Credentials.from_service_account_file(st.secrets["google_drive"]["service_account_file"])
+    drive_service = build("drive", "v3", credentials=credentials)
+
+    file_metadata = {
+        "name": os.path.basename(file_path),
+        "parents": [folder_id],
+    }
+    media = MediaFileUpload(file_path, mimetype="text/plain")
+    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media).execute()
+    return uploaded_file.get("id")
 
 def save_interview_data(
+    username,
+    transcripts_directory,
+    times_directory,
+    file_name_addition_transcript="",
+    file_name_addition_time="",
+    google_drive_folder_id=None,
+):
+    """Write interview data (transcript and time) to disk and upload to Google Drive."""
+    # Local paths for temporary saving
+    transcript_path = os.path.join(
+        transcripts_directory, f"{username}{file_name_addition_transcript}.txt"
+    )
+    time_path = os.path.join(
+        times_directory, f"{username}{file_name_addition_time}.txt"
+    )
+
+    # Store chat transcript locally
+    with open(transcript_path, "w") as t:
+        for message in st.session_state.messages:
+            t.write(f"{message['role']}: {message['content']}\n")
+
+    # Store file with start time and duration of interview
+    with open(time_path, "w") as d:
+        duration = (time.time() - st.session_state.start_time) / 60
+        d.write(
+            f"Start time (UTC): {time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(st.session_state.start_time))}\nInterview duration (minutes): {duration:.2f}"
+        )
+
+    # Upload files to Google Drive if folder ID is provided
+    if google_drive_folder_id:
+        upload_to_google_drive(transcript_path, google_drive_folder_id)
+        upload_to_google_drive(time_path, google_drive_folder_id)
+
+    # Cleanup local files after uploading
+    os.remove(transcript_path)
+    os.remove(time_path)
+
+
+
+def og_save_interview_data(
     username,
     transcripts_directory,
     times_directory,
