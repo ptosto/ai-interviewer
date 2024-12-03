@@ -1,5 +1,5 @@
 # Interview outline
-INTERVIEW_OUTLINE = """In the interview, please assess the respondent's knowledge and understanding relevant to an entry-level IT Analyst role. Determine whether the respondent demonstrates a personal point of view (e.g., value, importance, or method) about each topic as an indicator of a deeper level of understanding. Cover the following topics, asking 1–2 questions per topic before moving to the next:
+INTERVIEW_OUTLINE = """fooIn the interview, please assess the respondent's knowledge and understanding relevant to an entry-level IT Analyst role. Determine whether the respondent demonstrates a personal point of view (e.g., value, importance, or method) about each topic as an indicator of a deeper level of understanding. Cover the following topics, asking 1–2 questions per topic before moving to the next:
 
 1. Process and Technology:
    - Understanding the connection between business strategy and IT.
