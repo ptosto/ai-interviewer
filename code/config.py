@@ -104,7 +104,7 @@ MAX_OUTPUT_TOKENS = 1024
 
 
 # Display login screen with usernames and simple passwords for studies
-LOGINS = False
+LOGINS = True
 
 
 # Directories
