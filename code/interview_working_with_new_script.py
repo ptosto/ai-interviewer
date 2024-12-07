@@ -17,8 +17,6 @@ openai.api_key = st.secrets["API_KEY"]
 # Set page title and icon
 st.set_page_config(page_title="IT Analyst Interview", page_icon=config.AVATAR_INTERVIEWER)
 
-import streamlit as st
-
 # Check if usernames and logins are enabled
 if config.LOGINS:
     pwd_correct, username = check_password()
@@ -74,8 +72,6 @@ for message in st.session_state.messages[1:]:
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-abort_interview_message = ""
-
 # Add 'Quit' button to dashboard
 col1, col2 = st.columns([0.85, 0.15])
 # Place where the second column is
@@ -83,18 +79,25 @@ with col2:
 
     # If interview is active and 'Quit' button is clicked
     if st.session_state.interview_active and st.button(
-        "Quit", help="End the interview early."
+        "Quit", help="End the interview."
     ):
-        abort_interview_message = "End the interview"
+
+        # Set interview to inactive, display quit message, and store data
+        st.session_state.interview_active = False
+        quit_message = "You have cancelled the interview."
+        st.session_state.messages.append({"role": "assistant", "content": quit_message})
+        save_interview_data(
+            st.session_state.username,
+            config.TRANSCRIPTS_DIRECTORY,
+            config.TIMES_DIRECTORY,
+            google_drive_folder_id=drive_folder_id
+
+        )
+
 
 # Main chat if interview is active
 if st.session_state.interview_active:
-
-    if abort_interview_message:
-        message_respondent = abort_interview_message
-        st.session_state.interview_active = False
-    else:
-        message_respondent = st.chat_input("Your thoughtful response here")
+    message_respondent = st.chat_input("Your thoughtful response here")
 
     if message_respondent:
         st.session_state.messages.append({"role": "user", "content": message_respondent})
@@ -121,11 +124,6 @@ if st.session_state.interview_active:
                         message_placeholder.markdown(message_interviewer + "▌")
             except Exception as e:
                 st.error(f"Error during API call: {e}")
-
-            # signal from the assistant that the interview should end
-            if "x7y8" in message_interviewer:
-                message_interviewer = message_interviewer.replace("x7y8", "").strip()
-                st.session_state.interview_active = False 
 
             message_placeholder.markdown(message_interviewer)
             st.session_state.messages.append({"role": "assistant", "content": message_interviewer})

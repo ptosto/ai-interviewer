@@ -2,6 +2,44 @@ import streamlit as st
 import hmac
 import time
 import os
+import json
+import config
+import logging
+
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from googleapiclient.errors import HttpError
+
+logging.basicConfig(level=logging.DEBUG)
+
+def save_session_to_file(username, directory, google_drive_folder_id=None):
+    """Save session messages to a JSON file and optionally upload to Google Drive."""
+    session_file = os.path.join(directory, f"{username}_session.json")
+    try:
+        with open(session_file, "w") as f:
+            json.dump(st.session_state.messages, f)
+        logging.debug(f"Session saved to {session_file}")
+
+        # Upload to Google Drive if folder ID is provided
+        if google_drive_folder_id:
+            upload_to_google_drive(session_file, google_drive_folder_id)
+    except Exception as e:
+        logging.error(f"Error saving session to file: {e}")
+        st.error(f"Error saving session: {e}")
+
+def load_session_from_file(username, directory):
+    """Load session messages from a JSON file."""
+    session_file = os.path.join(directory, f"{username}_session.json")
+    try:
+        if os.path.exists(session_file):
+            with open(session_file, "r") as f:
+                st.session_state.messages = json.load(f)
+            logging.debug(f"Session loaded from {session_file}")
+            return True
+    except Exception as e:
+        logging.error(f"Error loading session from file: {e}")
+    return False
 
 
 # Password screen for dashboard (note: only very basic authentication!)
@@ -58,46 +96,6 @@ def check_if_interview_completed(directory, username):
 
         return False
 
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-import os
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-import json  # Add this at the top of the file if not already imported
-
-def upload_to_google_drive(file_path, folder_id):
-    try:
-        logging.debug(f"Attempting to upload {file_path} to folder {folder_id}")
-        
-        # Parse the JSON string into a dictionary
-        service_account_info = json.loads(st.secrets["google_drive"]["service_account_file"])
-        
-        credentials = Credentials.from_service_account_info(service_account_info)
-        drive_service = build("drive", "v3", credentials=credentials)
-
-        file_metadata = {
-            "name": os.path.basename(file_path),
-            "parents": [folder_id],
-        }
-        logging.debug(f"File metadata: {file_metadata}")
-
-        media = MediaFileUpload(file_path, mimetype="text/plain")
-        uploaded_file = drive_service.files().create(
-            body=file_metadata, media_body=media
-        ).execute()
-
-        logging.info(f"Uploaded file ID: {uploaded_file.get('id')}")
-        return uploaded_file.get("id")
-    except Exception as e:
-        logging.error(f"Upload error: {e}")
-        st.error(f"Upload error: {e}")
-        return None
-
-
-
 def save_interview_data(
     username,
     transcripts_directory,
@@ -106,7 +104,8 @@ def save_interview_data(
     file_name_addition_time="",
     google_drive_folder_id=None,
 ):
-    """Write interview data (transcript and time) to disk and upload to Google Drive."""
+    """Write interview data (transcript and time) to disk
+       Then upload the saved files to Google Drive."""
     # Local paths for temporary saving
     transcript_path = os.path.join(
         transcripts_directory, f"{username}{file_name_addition_transcript}.txt"
@@ -136,33 +135,41 @@ def save_interview_data(
     #os.remove(transcript_path)
     #os.remove(time_path)
 
+def upload_to_google_drive(file_path, folder_id):
+    """Upload a file to Google Drive, overwriting if the file already exists."""
+    try:
+        # Parse the service account credentials
+        service_account_info = json.loads(st.secrets["google_drive"]["service_account_file"])
+        credentials = Credentials.from_service_account_info(service_account_info)
+        drive_service = build("drive", "v3", credentials=credentials)
+
+        # Extract file name
+        file_name = os.path.basename(file_path)
+
+        # Check if the file already exists in the folder
+        query = f"'{folder_id}' in parents and name = '{file_name}' and trashed = false"
+        response = drive_service.files().list(q=query, spaces='drive').execute()
+        files = response.get('files', [])
+
+        if files:
+            # File exists, update it
+            file_id = files[0]['id']
+            media = MediaFileUpload(file_path, mimetype="application/json")
+            drive_service.files().update(fileId=file_id, media_body=media).execute()
+            logging.info(f"Updated file {file_name} in Google Drive folder {folder_id}")
+        else:
+            # File doesn't exist, create a new one
+            file_metadata = {
+                "name": file_name,
+                "parents": [folder_id],
+            }
+            media = MediaFileUpload(file_path, mimetype="application/json")
+            drive_service.files().create(body=file_metadata, media_body=media).execute()
+            logging.info(f"Uploaded new file {file_name} to Google Drive folder {folder_id}")
+    except HttpError as e:
+        logging.error(f"An error occurred while uploading to Google Drive: {e}")
+    except Exception as e:
+        logging.error(f"Unexpected error during Google Drive upload: {e}")
 
 
-def og_save_interview_data(
-    username,
-    transcripts_directory,
-    times_directory,
-    file_name_addition_transcript="",
-    file_name_addition_time="",
-):
-    """Write interview data (transcript and time) to disk."""
 
-    # Store chat transcript
-    with open(
-        os.path.join(
-            transcripts_directory, f"{username}{file_name_addition_transcript}.txt"
-        ),
-        "w",
-    ) as t:
-        for message in st.session_state.messages:
-            t.write(f"{message['role']}: {message['content']}\n")
-
-    # Store file with start time and duration of interview
-    with open(
-        os.path.join(times_directory, f"{username}{file_name_addition_time}.txt"),
-        "w",
-    ) as d:
-        duration = (time.time() - st.session_state.start_time) / 60
-        d.write(
-            f"Start time (UTC): {time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(st.session_state.start_time))}\nInterview duration (minutes): {duration:.2f}"
-        )

@@ -1,3 +1,28 @@
+# Building the AI-interviewer streamlit app.
+
+Run it locally like this:
+(base) PS C:\Users\Peter Tosto> cd '.\OneDrive - The Principia\coding\ai-interviewer\ai-interviewer\code\'
+(base) PS C:\Users\Peter Tosto\OneDrive - The Principia\coding\ai-interviewer\ai-interviewer\code> conda activate interviews
+(interviews) PS C:\Users\Peter Tosto\OneDrive - The Principia\coding\ai-interviewer\ai-interviewer\code> streamlit run interview.py
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://10.130.24.54:8501
+
+Usernames are in secrets.toml
+
+Update the project in github and run it from streamlit community cloud
+  https://ai-interviewer-pt.streamlit.app/
+
+Usernames are in Streamlit | Manage App | Settings | Secrets
+
+# ToDo
+After making an entry, the chat window needs to scroll so I can see my last response and the new prompt.
+
+
+# Original repository: https://github.com/friedrichgeiecke/interviews/
+
 # Code for "Conversations at Scale: Robust AI-led Interviews with a Simple Open-Source Platform"
 
 There are two options to explore the AI-led interviews discussed in the paper.
