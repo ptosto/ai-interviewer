@@ -4,11 +4,14 @@ import time
 import os
 import config
 import openai
+import logging
+
 
 from utils import (
     check_password,
     check_if_interview_completed,
     save_interview_data,
+    send_email,
     upload_to_google_drive,
 )
 
@@ -56,7 +59,7 @@ if "messages" not in st.session_state:
 if "start_time" not in st.session_state:
     st.session_state.start_time = time.time()
     st.session_state.start_time_file_names = time.strftime(
-        "%Y_%m_%d_%H_%M_%S", time.localtime(st.session_state.start_time)
+        "%Y-%m-%d_%H-%M_%S", time.localtime(st.session_state.start_time)
     )
 
 # Check if interview previously completed
@@ -124,8 +127,14 @@ if st.session_state.interview_active:
 
             # signal from the assistant that the interview should end
             if "x7y8" in message_interviewer:
+                logging.debug(f"End interview signal received")
+
                 message_interviewer = message_interviewer.replace("x7y8", "").strip()
                 st.session_state.interview_active = False 
+
+                # Send the final interviewer message via email
+                send_email(message_body=message_interviewer)
+
 
             message_placeholder.markdown(message_interviewer)
             st.session_state.messages.append({"role": "assistant", "content": message_interviewer})

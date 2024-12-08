@@ -130,7 +130,7 @@ General Instructions:
 
 Summary and evaluation
 
-At the end of the interview (or if the user chooses to end the interview), write an assessment of the respondent's readiness for an entry-level IT analyst role with strengths and opportunities for further study. 
+At the end of the interview (or if the user chooses to end the interview), write an assessment of the respondent's readiness for an entry-level IT analyst role with strengths and opportunities for further study. Include the exact code "x7y8" at the end of your final response. The code triggers behavior in the UI, so it's critical that you send it whenever the interview is concluded.
 """
 
 # Codes
@@ -141,7 +141,7 @@ Lastly, there are specific codes that must be used exclusively in designated sit
 
 Problematic content: If the respondent writes legally or ethically problematic content, please reply with exactly the code '5j3k' and no other text.
 
-End of the interview: When you have asked all questions from the Interview Outline, or when the respondent does not want to continue the interview, please provide the summary and evaluation followed by exactly the code 'x7y8'."""
+End of the interview: When you have asked all questions from the Interview Outline, or when the respondent does not want to continue the interview, please provide the summary and evaluation. Include the exact code "x7y8" at the end of your final response. The code triggers behavior in the UI, so it's critical that you send it whenever the interview is concluded."""
 
 
 # Pre-written closing messages for codes
@@ -181,3 +181,8 @@ BACKUPS_DIRECTORY = "../data/backups/"
 # Avatars displayed in the chat interface
 AVATAR_INTERVIEWER = "\U0001F9D1\U0000200D\U0001F4BB"
 AVATAR_RESPONDENT = "\U0001F393"
+
+# Send final interview assessment by email
+SENDER_EMAIL = "peter@tosto.com"
+SEND_TO = "peter.tosto@principia.edu"
+SEND_SUBJECT = "{username} MIS Interview Evaluation"
