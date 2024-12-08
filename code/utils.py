@@ -5,15 +5,13 @@ import os
 import json
 import config
 import logging
-import base64
-
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-from googleapiclient.discovery import build
-from email.mime.text import MIMEText
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -176,16 +174,6 @@ def upload_to_google_drive(file_path, folder_id):
         logging.error(f"Unexpected error during Google Drive upload: {e}")
 
 
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from email.mime.text import MIMEText
-import base64
-import os
-import json
-import logging
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-
 def send_email(message_body):
     message = Mail(
         from_email=config.SENDER_EMAIL,
@@ -201,68 +189,3 @@ def send_email(message_body):
     except Exception as e:
         logging.debug(f"Error: {e}")
 
-def gm_send_email(message_body):
-    """Send an email using Gmail API with OAuth credentials."""
-    try:
-        # Load Gmail OAuth credentials from secrets.toml
-        client_secrets = st.secrets["gmail_oauth"]["client_secrets"]
-        credentials = Credentials.from_authorized_user_info(json.loads(client_secrets))
-
-        # Build Gmail API service
-        gmail_service = build("gmail", "v1", credentials=credentials)
-
-        # Use constants from config.py
-        to = config.SEND_TO
-        subject = config.SEND_SUBJECT.format(username=st.session_state.username)
-        sender = config.SENDER_EMAIL
-
-        # Create the email
-        message = MIMEText(message_body)
-        message["to"] = to
-        message["from"] = sender
-        message["subject"] = subject
-        raw_message = base64.urlsafe_b64encode(message.as_string().encode("utf-8"))
-        raw_message = raw_message.decode("utf-8")
-
-        # Send the email
-        gmail_service.users().messages().send(
-            userId="me", body={"raw": raw_message}
-        ).execute()
-        logging.info(f"Email sent to {to} with subject: {subject}")
-    except HttpError as e:
-        logging.error(f"An error occurred while sending email: {e}")
-    except Exception as e:
-        logging.error(f"Unexpected error during email sending: {e}")
-
-
-def old_send_email(message_body):
-    """Send an email using Gmail API with constants from config.py."""
-    try:
-        # Parse the service account credentials
-        service_account_info = json.loads(st.secrets["google_drive"]["service_account_file"])
-        credentials = Credentials.from_service_account_info(service_account_info)
-        gmail_service = build("gmail", "v1", credentials=credentials)
-
-        # Use constants from config.py
-        to = config.SEND_TO
-        subject = "test_sendemail"
-        #subject = config.SEND_SUBJECT.format(username=st.session_state.username)
-        sender = config.SENDER_EMAIL
-
-        # Create the email
-        message = MIMEText(message_body)
-        message["to"] = to
-        message["from"] = sender
-        message["subject"] = subject
-        raw_message = base64.urlsafe_b64encode(message.as_string().encode("utf-8"))
-        raw_message = raw_message.decode("utf-8")
-
-        # Send the email
-        gmail_service.users().messages().send(
-            userId="me", body={"raw": raw_message}
-        ).execute()
-        logging.info(f"Email sent to {to} with subject: {subject}")
-    except HttpError as e:
-        logging.error(f"An error occurred while sending email: {e}")
-    except Exception as e:
-        logging.error(f"Unexpected error during email sending: {e}")
