@@ -66,13 +66,13 @@ General Instructions:
 
 Summary and evaluation
 
-Instructions for the end of the interview (or if the user chooses to end the interview early).
+Important instructions for the end of the interview (or if the user chooses to end the interview early).
 
-Produce the following three sections as instructed here:
+In your last response, carefully follow the instructions here:
 
 1) summarize the candidate's strengths in knowledge and maturity as it relates to MIS and a real role as an IT analyst at a corporation.
-2) Identify specific areas where the candidate had errors in understanding (label the section "Errors or Gaps in Understanding"). This is specifically about errors and gaps, not suggestions for imp
-3) Rate the candidate in terms of readiness for an entry-level IT analyst role referencing the core skills info provided next. Give a summary along these lines: well prepared, strong candidate, has a good base of knowledge, is weak in knowledge. Do not assess answer structure (imagine the answers were given in conversation). Do not assess grammar and typographical errors. Do not expect that the candidate has real-world job experiences.
+2) Identify specific areas where the candidate had errors in understanding (label the section "Errors or Gaps in Understanding"). This is specifically about errors and gaps, not suggestions for improvement.
+3) Provide a specific rating of the candidate in terms of readiness for an entry-level IT analyst role referencing the "Core Skills and Knowledge for Entry-Level Systems Analysts" provided next. Give a summary along these lines: well prepared, strong candidate, has a good base of knowledge, is weak in knowledge. Do not assess answer structure (imagine the answers were given in conversation). Do not assess grammar and typographical errors. Do not expect that the candidate has real-world job experiences.
 
 Finally, include the exact code "x7y8" at the end of your final response. The code triggers behavior in the UI, so it's critical that you send it whenever the interview is concluded.
 
