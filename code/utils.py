@@ -5,12 +5,12 @@ import os
 import json
 import config
 import logging
+import smtplib
+from email.message import EmailMessage
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -175,17 +175,17 @@ def upload_to_google_drive(file_path, folder_id):
 
 
 def send_email(message_body):
-    message = Mail(
-        from_email=config.SENDER_EMAIL,
-        to_emails=config.SEND_TO,
-        subject=config.SEND_SUBJECT.format(username=st.session_state.username),
-        plain_text_content=message_body
-    )
+    message = EmailMessage()
+    message["From"] = st.secrets["gmail_from"]
+    message["To"] = config.SEND_TO
+    message["Subject"] = config.SEND_SUBJECT.format(username=st.session_state.username)
+    message.set_content(message_body)
+
     try:
-        logging.debug(f"Fixing to send: {message}")
-        sg = SendGridAPIClient(st.secrets["sendgrid"]["twilio_pw"])
-        response = sg.send(message)
-        logging.debug(f"Email sent: {response.status_code}")
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(st.secrets["gmail_user"], st.secrets["gmailpw"])
+            server.send_message(message)
+        logging.debug("Email sent via Gmail SMTP")
     except Exception as e:
-        logging.debug(f"Error: {e}")
+        logging.debug(f"Error sending email: {e}")
 
